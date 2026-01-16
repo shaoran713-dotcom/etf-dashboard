@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock & ETF analysis system</title>
-    <!-- 確保下方連結沒有被 Markdown 格式干擾 -->
+    <title>ETF 智選戰情室 - 系統穩定版</title>
+    <!-- 核心庫連結：請確保下方連結是乾淨的網址，沒有括號 -->
     <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
     <script src="[https://unpkg.com/react@18/umd/react.production.min.js](https://unpkg.com/react@18/umd/react.production.min.js)"></script>
     <script src="[https://unpkg.com/react-dom@18/umd/react-dom.production.min.js](https://unpkg.com/react-dom@18/umd/react-dom.production.min.js)"></script>
@@ -86,42 +86,52 @@
             return (
                 <div className="min-h-screen p-6 max-w-5xl mx-auto">
                     {showModal && (
-                        <div className="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-6">
-                            <div className="bg-slate-900 p-8 rounded-3xl border border-slate-800 w-full max-w-md text-center">
+                        <div className="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-6 text-white">
+                            <div className="bg-slate-900 p-8 rounded-3xl border border-slate-800 w-full max-w-md text-center shadow-2xl">
                                 <Icon name="lock" className="mx-auto mb-4 text-indigo-500" size={32} />
-                                <h2 className="text-xl font-bold mb-6 text-white uppercase tracking-tight">金鑰驗證</h2>
-                                <input type="password" placeholder="貼上您的 Gemini API Key" className="w-full bg-black border border-slate-800 p-4 rounded-xl mb-4 text-center text-white outline-none focus:border-indigo-500 transition-colors"
+                                <h2 className="text-xl font-black mb-6 uppercase tracking-tight">系統啟動驗證</h2>
+                                <input type="password" placeholder="請貼上您的 Gemini API Key" className="w-full bg-black border border-slate-800 p-4 rounded-xl mb-4 text-center text-white outline-none focus:border-indigo-500 transition-colors"
                                     onKeyDown={(e) => { if(e.key === 'Enter' && e.target.value.trim()) { localStorage.setItem('gemini_api_key', e.target.value); setApiKey(e.target.value); setShowModal(false); }}} />
-                                <p className="text-[10px] text-slate-500 uppercase tracking-widest">輸入後按 Enter 啟動系統</p>
+                                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">輸入金鑰後按下 Enter 鍵</p>
                             </div>
                         </div>
                     )}
                     <header className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
                         <div className="flex items-center gap-4">
                             <div className="bg-indigo-600 p-2.5 rounded-2xl"><Icon name="activity" className="text-white" /></div>
-                            <h1 className="text-2xl font-black italic uppercase">Strat-Finance <span className="text-indigo-500">Core</span></h1>
+                            <h1 className="text-2xl font-black italic uppercase text-white tracking-tighter">Strat-Finance <span className="text-indigo-500">Core</span></h1>
                         </div>
-                        <div className="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-800 w-full md:w-auto">
-                            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && runAnalysis()} placeholder="代號 (如 0050, QQQ)" className="bg-transparent px-6 py-2 text-sm outline-none w-full text-white" />
-                            <button onClick={runAnalysis} className="bg-indigo-600 px-8 py-2.5 rounded-xl text-xs font-black uppercase text-white flex items-center gap-2">
-                                {loading ? <Icon name="refresh" className="animate-spin" size={14} /> : <Icon name="search" size={14} />} 分析
+                        <div className="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-800 w-full md:w-auto shadow-2xl">
+                            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && runAnalysis()} placeholder="代號 (如 2330, QQQ)" className="bg-transparent px-6 py-2 text-sm outline-none w-full text-white" />
+                            <button onClick={runAnalysis} className="bg-indigo-600 px-8 py-2.5 rounded-xl text-xs font-black uppercase text-white flex items-center gap-2 hover:bg-indigo-500 transition-all">
+                                {loading ? <Icon name="refresh" className="animate-spin" size={14} /> : <Icon name="search" size={14} />} 執行分析
                             </button>
                         </div>
                     </header>
-                    <div className="space-y-10">
+                    <div className="space-y-10 pb-20">
+                        {reports.length === 0 && !loading && <div className="text-center py-20 opacity-20 font-black text-4xl text-white uppercase tracking-tighter italic">Waiting for Command</div>}
                         {reports.map((r, i) => (
-                            <div key={i} className="bg-slate-900/50 border border-slate-800 rounded-[2.5rem] overflow-hidden animate-fade-in shadow-2xl">
-                                <div className="p-8 border-b border-slate-800 flex justify-between items-center">
-                                    <h2 className="text-2xl font-bold text-white uppercase">{r.symbol} 深度報告</h2>
-                                    <span className="text-3xl font-mono font-black text-white">${r.price}</span>
+                            <div key={i} className="bg-slate-900/50 border border-slate-800 rounded-[2.5rem] overflow-hidden animate-fade-in shadow-2xl backdrop-blur-sm">
+                                <div className="p-8 border-b border-slate-800 flex justify-between items-center text-white">
+                                    <h2 className="text-2xl font-black uppercase tracking-tighter italic">{r.symbol} ANALYSIS REPORT</h2>
+                                    <span className="text-3xl font-mono font-black">${r.price}</span>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 p-8 gap-10">
-                                    <AssetPieChart data={r.composition} />
+                                    <div className="flex flex-col items-center">
+                                        <AssetPieChart data={r.composition} />
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Asset Composition</p>
+                                    </div>
                                     <div className="md:col-span-2 space-y-6">
-                                        <p className="text-slate-300 text-sm leading-relaxed">{r.analysis.marketPerformance}</p>
-                                        <div className="pt-6 border-t border-slate-800 flex items-center gap-4">
-                                            <div className="p-3 bg-indigo-500/10 rounded-xl text-indigo-400 border border-indigo-500/20"><Icon name="cpu" /></div>
-                                            <div><p className="text-[9px] text-slate-500 font-bold uppercase tracking-tighter">AI 戰略結論</p><p className="text-xl font-black text-white">{r.analysis.verdict}</p></div>
+                                        <div className="p-4 bg-black/20 rounded-2xl border border-slate-800/50">
+                                            <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">Market Insight</h3>
+                                            <p className="text-slate-300 text-sm leading-relaxed">{r.analysis.marketPerformance}</p>
+                                        </div>
+                                        <div className="pt-6 border-t border-slate-800 flex items-center gap-6">
+                                            <div className="p-4 bg-indigo-500/10 rounded-2xl text-indigo-400 border border-indigo-500/20 shadow-inner"><Icon name="cpu" size={24} /></div>
+                                            <div className="text-white">
+                                                <p className="text-[9px] text-slate-500 font-black uppercase tracking-tighter">Strategic Verdict</p>
+                                                <p className="text-2xl font-black tracking-tight leading-none mt-1">{r.analysis.verdict}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
